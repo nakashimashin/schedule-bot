@@ -1,5 +1,7 @@
 import datetime
 import os.path
+import pdfplumber
+import re
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -11,12 +13,22 @@ from googleapiclient.errors import HttpError
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
-def readschedule():
-    f = open('schedule.txt')
-    data1 = f.read()
-    lines1 = data1.split('\n')
-    f.close()
-    return lines1
+def readschedule(pdf_path):
+    with pdfplumber.open(pdf_path) as pdf:
+        year = None
+        month = None
+
+        for page in pdf.pages:
+            text = page.extract_text()
+
+            # 年月の取得
+            year_month_search = re.search(r"(\d{4})/(\d{1,2})/(\d{1,2})", text)
+            print("正規表現: ", year_month_search)
+            if year_month_search:
+                year = year_month_search.group(1)
+                month = year_month_search.group(2)
+    return year, month
+
 
 def main():
     creds = None
@@ -35,95 +47,66 @@ def main():
             token.write(creds.to_json())
 
 
-    # try:
-    #     # GoogleカレンダーAPIのサービスオブジェクトを作成
-    #     service = build('calendar', 'v3', credentials=creds)
+    year, month = readschedule("教室希望_教養_12月.pdf")
+    print("年: ", year, "月: ", month)
 
-    #     # 現在のUTC日時を取得
-    #     now = datetime.datetime.utcnow().isoformat() + 'Z'
 
-    #     print("次の1件のイベントを取得中")
-    #     # カレンダーのイベントを取得
-    #     events_result = (
-    #         service.events()
-    #         .list(
-    #             calendarId='primary',
-    #             timeMin=now,
-    #             maxResults=1,
-    #             singleEvents=True,
-    #             orderBy='startTime',
-    #         )
-    #         .execute()
-    #     )
-    #     events = events_result.get('items', [])
+    # service = build('calendar', 'v3', credentials=creds)
 
-    #     if not events:
-    #         print("次のイベントはありません")
-    #         return
-    #     # イベントのタイトルと開始日時を表示
-    #     for event in events:
-    #         start = event['start'].get('dateTime', event['start'].get('date'))
-    #         print(start, event['summary'])
+    # lines1 = readschedule()
+    # print(lines1)
 
-    # except HttpError as error:
-    #     print(f'エラーが発生しました: {error}')
+    # yearmonth = readschedule()[0]
+    # a = yearmonth.split('.')
+    # year = int(a[0])
+    # mon = int(a[1])
 
-    service = build('calendar', 'v3', credentials=creds)
+    # if mon == 1 or mon == 3 or mon == 5 or mon == 7 or mon == 8 or mon == 10 or mon == 12:
+    #     num_days = 31
+    # elif mon == 2:
+    #     num_days = 28
+    # else :
+    #     num_days = 30
 
-    lines1 = readschedule()
-    print(lines1)
+    # for i in readschedule():
+    #     s = i.split(' ')
+    #     if(len(s) == 1):
+    #         continue
 
-    yearmonth = readschedule()[0]
-    a = yearmonth.split('.')
-    year = int(a[0])
-    mon = int(a[1])
+    #     d_s = int(s[0])
+    #     d_e = int(s[0])
+    #     m_s = mon
+    #     m_e = mon
+    #     y_s = year
+    #     y_e = year
 
-    if mon == 1 or mon == 3 or mon == 5 or mon == 7 or mon == 8 or mon == 10 or mon == 12:
-        num_days = 31
-    elif mon == 2:
-        num_days = 28
-    else :
-        num_days = 30
+    #     if(mon == 12 and d_e == 31):
+    #         y_e = year + 1
 
-    for i in readschedule():
-        s = i.split(' ')
-        if(len(s) == 1):
-            continue
-
-        d_s = int(s[0])
-        d_e = int(s[0])
-        m_s = mon
-        m_e = mon
-        y_s = year
-        y_e = year
-
-        if(mon == 12 and d_e == 31):
-            y_e = year + 1
-
-        if(num_days == d_e):
-            d_e = 1
-            if mon == 12:
-                m_e = 1
-            else:
-                m_e = m_e + 1
+    #     if(num_days == d_e):
+    #         d_e = 1
+    #         if mon == 12:
+    #             m_e = 1
+    #         else:
+    #             m_e = m_e + 1
 
 
 
-        event = {
-        'summary': '{}'.format(s[1]),
-        'location': 'Japan',
-        'description': '{}'.format(s[1]),
-        'start': {
-            'date': '{}-{}-{}'.format(y_s,m_s,d_s),
-            'timeZone': 'Japan',
-        },
-        'end': {
-            'date': '{}-{}-{}'.format(y_e,m_e,d_e),
-            'timeZone': 'Japan',
-        },
-        }
-        event = service.events().insert(calendarId='primary',body=event).execute()
-        print (event['id'])
+    #     event = {
+    #     'summary': '{}'.format(s[1]),
+    #     'location': 'Japan',
+    #     'description': '{}'.format(s[1]),
+    #     'start': {
+    #         'date': '{}-{}-{}'.format(y_s,m_s,d_s),
+    #         'timeZone': 'Japan',
+    #     },
+    #     'end': {
+    #         'date': '{}-{}-{}'.format(y_e,m_e,d_e),
+    #         'timeZone': 'Japan',
+    #     },
+    #     }
+    #     event = service.events().insert(calendarId='primary',body=event).execute()
+    #     print (event['id'])
 
 if __name__ == '__main__':
     main()
