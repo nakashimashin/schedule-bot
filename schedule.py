@@ -17,6 +17,7 @@ def readschedule(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
         year = None
         month = None
+        available_dates = []
 
         for page in pdf.pages:
             text = page.extract_text()
@@ -27,7 +28,24 @@ def readschedule(pdf_path):
             if year_month_search:
                 year = year_month_search.group(1)
                 month = year_month_search.group(2)
-    return year, month
+
+            # 予定の取得
+
+            tables = page.extract_tables()
+
+            # 複数のテーブルに対応
+            for table in tables:
+                date_row = None
+                # 各行を取得
+                for row in table:
+                    if row[0] == "日":
+                        date_row = row
+                    # 各セルを取得
+                    for i, cell in enumerate(row):
+                        if cell and "コ" in cell:
+                            available_dates.append(date_row[i])
+
+    return year, month, available_dates
 
 
 def main():
@@ -47,8 +65,8 @@ def main():
             token.write(creds.to_json())
 
 
-    year, month = readschedule("教室希望_教養_12月.pdf")
-    print("年: ", year, "月: ", month)
+    year, month, available_dates = readschedule("教室希望_教養_12月.pdf")
+    print("年: ", year, "月: ", month, "利用可能日: ", available_dates)
 
 
     # service = build('calendar', 'v3', credentials=creds)
