@@ -1,4 +1,3 @@
-import datetime
 import os.path
 import pdfplumber
 import re
@@ -9,9 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-
 
 def readschedule(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
@@ -47,6 +44,33 @@ def readschedule(pdf_path):
 
     return year, month, available_dates
 
+def add_event_to_calendar(service, year, month, available_dates):
+    for item in available_dates:
+        date = item["日付"]
+        room_num = item["教室番号"]
+
+        event_date = f"{year}-{month.zfill(2)}-{date.zfill(2)}"
+        start_time = f"{event_date}T18:00:00+09:00"
+        end_time = f"{event_date}T20:30:00+09:00"
+
+        event = {
+            'summary': f'教養{room_num}',
+            'start': {
+                'dateTime': start_time,
+                'timeZone': 'Asia/Tokyo',
+            },
+            'end': {
+                'dateTime': end_time,
+                'timeZone': 'Asia/Tokyo',
+            },
+            'description': '部活動',
+        }
+
+        try:
+            created_event = service.events().insert(calendarId='primary', body=event).execute()
+            print(f"Event created: {created_event.get('htmlLink')}")
+        except HttpError as e:
+            print(f"Error: {e}")
 
 def main():
     creds = None
@@ -64,13 +88,12 @@ def main():
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
+    service = build('calendar', 'v3', credentials=creds)
 
     year, month, available_dates = readschedule("教室希望_教養_12月.pdf")
     print("年: ", year, "月: ", month, "利用可能日: ", available_dates)
 
-
-    service = build('calendar', 'v3', credentials=creds)
-
+    add_event_to_calendar(service, year, month, available_dates)
 
 if __name__ == '__main__':
     main()
