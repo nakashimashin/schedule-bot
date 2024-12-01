@@ -1,6 +1,7 @@
-import os.path
+import os
 import pdfplumber
 import re
+from dotenv import load_dotenv
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -9,6 +10,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+load_dotenv()
+CALENDAR_ID = os.getenv("CALENDAR_ID")
 
 def readschedule(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
@@ -67,7 +71,8 @@ def add_event_to_calendar(service, year, month, available_dates):
         }
 
         try:
-            created_event = service.events().insert(calendarId='primary', body=event).execute()
+            created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+
             print(f"Event created: {created_event.get('htmlLink')}")
         except HttpError as e:
             print(f"Error: {e}")
