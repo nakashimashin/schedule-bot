@@ -8,3 +8,5 @@ services:
     working_dir: /app
     tty: true
     entrypoint: /bin/bash
+    ports:
+      - "5001:5001"
