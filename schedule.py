@@ -83,20 +83,6 @@ def add_event_to_calendar(service, year, month, available_dates):
             print(f"Error: {e}")
 
 def main():
-    # creds = None
-    # # ユーザーのアクセスとリフレッシュトークンを格納するtoken.jsonファイルが存在する場合、token.jsonを使用して認証する。
-    # if os.path.exists('token.json'):
-    #     creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # # 有効な資格情報がない場合、ユーザーにログインを求める。
-    # if not creds or not creds.valid:
-    #     if creds and creds.expired and creds.refresh_token:
-    #         creds.refresh(Request())
-    #     else:
-    #         flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-    #         creds = flow.run_local_server(host="0.0.0.0", port=5001, open_browser=False)
-    #     # 次回の実行のために資格情報を保存する
-    #     with open('token.json', 'w') as token:
-    #         token.write(creds.to_json())
     creds = service_account.Credentials.from_service_account_file(
         'service-account-key.json', scopes=SCOPES)
 
