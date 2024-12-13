@@ -34,14 +34,21 @@ def readschedule(pdf_path):
 
             # 複数のテーブルに対応
             for table in tables:
-                date_row = None
+                # 日付行を取得
+                date_row = next((row for row in table if row[0] == "日"), None)
+
+                # 日付行がない場合は次のテーブルへ
+                if not date_row:
+                    continue
+
                 # 各行を取得
                 for row in table:
                     if row[0] == "日":
-                        date_row = row
+                        continue # 日付行はスキップ
+
                     # 各セルを取得
                     for i, cell in enumerate(row):
-                        if cell and "コ" in cell:
+                        if "コ" in str(cell):
                             available_dates.append({"教室番号": row[0], "日付": date_row[i]})
 
     return year, month, available_dates
