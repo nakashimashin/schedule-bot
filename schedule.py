@@ -55,63 +55,34 @@ def readschedule(pdf_path):
 
     return year, month, available_dates
 
-# def add_event_to_calendar(service, year, month, available_dates):
-#     for item in available_dates:
-#         date = item["日付"]
-#         room_num = item["教室番号"]
-
-#         event_date = f"{year}-{month.zfill(2)}-{date.zfill(2)}"
-#         start_time = f"{event_date}T18:00:00+09:00"
-#         end_time = f"{event_date}T20:30:00+09:00"
-
-#         event = {
-#             'summary': f'教養{room_num}',
-#             'start': {
-#                 'dateTime': start_time,
-#                 'timeZone': 'Asia/Tokyo',
-#             },
-#             'end': {
-#                 'dateTime': end_time,
-#                 'timeZone': 'Asia/Tokyo',
-#             },
-#             'description': '部活動',
-#         }
-
-#         try:
-#             created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
-
-#             print(f"Event created: {created_event.get('htmlLink')}")
-#         except HttpError as e:
-#             print(f"Error: {e}")
-
-def add_single_event(service, item, year, month):
-    """1件のGoogleカレンダーのイベントを追加する関数"""
-    date = item["日付"]
-    room_num = item["教室番号"]
-
-    event_date = f"{year}-{month.zfill(2)}-{date.zfill(2)}"
-    start_time = f"{event_date}T18:00:00+09:00"
-    end_time = f"{event_date}T20:30:00+09:00"
-
-    event = {
-        'summary': f'教養{room_num}',
-        'start': {'dateTime': start_time, 'timeZone': 'Asia/Tokyo'},
-        'end': {'dateTime': end_time, 'timeZone': 'Asia/Tokyo'},
-        'description': '部活動',
-    }
-
-    try:
-        created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
-        print(f"Event created: {created_event.get('htmlLink')}")
-    except HttpError as e:
-        print(f"Error: {e}")
-
-
 def add_event_to_calendar(service, year, month, available_dates):
-    """Googleカレンダーのイベントを全件並列で追加する"""
-    with ThreadPoolExecutor() as executor:
-        executor.map(lambda item: add_single_event(service, item, year, month), available_dates)
+    for item in available_dates:
+        date = item["日付"]
+        room_num = item["教室番号"]
 
+        event_date = f"{year}-{month.zfill(2)}-{date.zfill(2)}"
+        start_time = f"{event_date}T18:00:00+09:00"
+        end_time = f"{event_date}T20:30:00+09:00"
+
+        event = {
+            'summary': f'教養{room_num}',
+            'start': {
+                'dateTime': start_time,
+                'timeZone': 'Asia/Tokyo',
+            },
+            'end': {
+                'dateTime': end_time,
+                'timeZone': 'Asia/Tokyo',
+            },
+            'description': '部活動',
+        }
+
+        try:
+            created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+
+            print(f"Event created: {created_event.get('htmlLink')}")
+        except HttpError as e:
+            print(f"Error: {e}")
 
 def main():
     creds = service_account.Credentials.from_service_account_file(
