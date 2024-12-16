@@ -30,7 +30,6 @@ def readschedule(pdf_path):
                 month = year_month_search.group(2)
 
             # 予定の取得
-
             tables = page.extract_tables()
 
             # 複数のテーブルに対応
@@ -79,7 +78,6 @@ def add_event_to_calendar(service, year, month, available_dates):
 
         try:
             created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
-
             print(f"Event created: {created_event.get('htmlLink')}")
         except HttpError as e:
             print(f"Error: {e}")
