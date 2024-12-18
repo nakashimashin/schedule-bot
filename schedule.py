@@ -2,7 +2,6 @@ import os
 import pdfplumber
 import re
 from dotenv import load_dotenv
-from concurrent.futures import ThreadPoolExecutor
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
