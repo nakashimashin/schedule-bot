@@ -2,3 +2,5 @@ token.json
 credentials.json
 .env
 service-account-key.json
+temp.pdf
+__pycache__/
