@@ -16,36 +16,60 @@ app = Flask(__name__)
 
 @app.route("/slack/events", methods=["POST"])
 def slack_events():
-    print("Headers:", request.headers)
-    print("Data:", request.data)
-    # Slackからのリクエストボディを取得
-    body = body = request.get_json(force=True)
+    print("=== リクエスト受信 ===")
+    print(f"Headers: {request.headers}")
+    print(f"Data: {request.data}")
 
+    # ボディの解析と内容の確認
+    body = request.get_json(force=True)
+    print(f"Request Body: {body}")
+
+    # Challenge確認
     if 'challenge' in body:
         print("Challenge received. Responding with challenge.")
         return body['challenge']
 
-    # ファイル共有イベントが来た時の処理
-    if 'event' in body and body['event']['type'] == 'file_shared':
-        file_id = body['event']['file']['id']
+    # イベントIDとタイムスタンプのログ
+    event_id = body.get('event_id')
+    event_time = body.get('event_time')
+    print(f"イベントID: {event_id}, タイムスタンプ: {event_time}")
 
-        # Slack APIを使ってファイルのURLを取得
+    # イベントタイプの確認
+    event_type = body.get('event', {}).get('type')
+    print(f"イベントタイプ: {event_type}")
+
+    # ファイル共有イベントの処理確認
+    if 'event' in body and event_type == 'file_shared':
+        print("ファイル共有イベントを受信しました。")
+
+        # ファイルIDの取得とログ出力
+        file_id = body['event']['file']['id']
+        print(f"ファイルID: {file_id}")
+
+        # Slack APIでファイル情報の取得
         headers = {'Authorization': f'Bearer {SLACK_BOT_TOKEN}'}
         file_info_url = f'https://slack.com/api/files.info?file={file_id}'
         response = requests.get(file_info_url, headers=headers)
-        file_url = response.json()['file']['url_private']
+        file_info = response.json()
+        print(f"Slack API ファイル情報の応答: {file_info}")
 
-        print(f"PDFファイルのURL: {file_url}")
+        # ファイルURLの取得
+        file_url = file_info.get('file', {}).get('url_private')
+        print(f"取得したPDFファイルのURL: {file_url}")
 
-        # PDFファイルをダウンロード
+        # ファイル処理の開始ログ
+        print("PDFファイルの処理を開始します。")
         download_and_process_pdf(file_url)
+        print("PDFファイルの処理が完了しました。")
 
         return jsonify({'status': 'File processing successfully'})
 
+    # 未処理のイベント
+    print("未処理のイベントを受信しました。")
     return jsonify({'status': 'Event not handled'})
 
 def download_and_process_pdf(file_url, file_name='temp.pdf'):
-    """SlackからPDFをダウンロードし、スケジュールを取得してGoogleカレンダーに登録する"""
+    print("発火しました")
     headers = {'Authorization': f'Bearer {SLACK_BOT_TOKEN}'}
     response = requests.get(file_url, headers=headers, stream=True)
 
