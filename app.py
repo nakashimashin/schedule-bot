@@ -11,7 +11,6 @@ load_dotenv()
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 CALENDAR_ID = os.getenv("CALENDAR_ID")
 
-# Flaskアプリの作成
 app = Flask(__name__)
 
 @app.route("/slack/events", methods=["POST"])
