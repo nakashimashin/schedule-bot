@@ -81,16 +81,3 @@ def add_event_to_calendar(service, year, month, available_dates):
         except HttpError as e:
             print(f"Error: {e}")
 
-def main():
-    creds = service_account.Credentials.from_service_account_file(
-        'service-account-key.json', scopes=SCOPES)
-
-    service = build('calendar', 'v3', credentials=creds)
-
-    year, month, available_dates = readschedule("教室希望_教養_12月.pdf")
-    print("年: ", year, "月: ", month, "利用可能日: ", available_dates)
-
-    add_event_to_calendar(service, year, month, available_dates)
-
-if __name__ == '__main__':
-    main()
