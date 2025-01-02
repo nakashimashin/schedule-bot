@@ -20,6 +20,13 @@ def lambda_handler(event, context):
     print("=== イベント受信 ===")
     print(json.dumps(event))  # 受信したイベントをログに出力
 
+    # contextオブジェクトの情報をログに出力
+    print(f"Function name: {context.function_name}")
+    print(f"Memory limit (MB): {context.memory_limit_in_mb}")
+    print(f"Time remaining (ms): {context.get_remaining_time_in_millis()}")
+    print(f"Log group name: {context.log_group_name}")
+    print(f"Log stream name: {context.log_stream_name}")
+
     for record in event['Records']:
         # SQSメッセージの解析
         body = json.loads(record['body'])
